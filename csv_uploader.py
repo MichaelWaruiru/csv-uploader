@@ -111,7 +111,7 @@ def upload_csv():
       
 root = tk.Tk()
 root.title("Secure CSV Uploader")
-root.geometry("400*250")
+root.geometry("400x250")
 
 label = tk.Label(root, text="Upload and Securely Store CSV Files", font=("Arial", 12))
 label.pack(pady=10)

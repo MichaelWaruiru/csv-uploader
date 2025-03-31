@@ -15,7 +15,7 @@ class User(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String(100))
   email = db.Column(db.String(100))
-  age = db.column(db.Integer)
+  age = db.Column(db.Integer)
   
 @app.route("/")
 def index():
