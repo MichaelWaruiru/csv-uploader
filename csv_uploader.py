@@ -94,7 +94,7 @@ def upload_csv():
   messagebox.showinfo("File saved", f"File saved at: {saved_file_path}")
   
   try:
-    df = pd.read_csv(saved_file_path, dtype=str)
+    df = pd.read_csv(saved_file_path, dtype=str) # Read all columns
   except Exception as e:
     messagebox.showerror("CSV read error", f"Error reading CSV: {e}")
     return
