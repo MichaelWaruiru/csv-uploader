@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from datetime import datetime
 from tqdm import tqdm # For progress bar
+import shutil
 from dotenv import load_dotenv
 
 # Load .env file
@@ -35,7 +36,7 @@ def sanitize_data(df):
   for _, row in df.iterrows():
     sanitized_row = []
     for cell in row:
-      cell in str(cell).strip()
+      cell = str(cell).strip()
       if not ALLOWED_PATTERN.match(cell):
         return None
       sanitized_row.append(cell)
@@ -47,7 +48,7 @@ def sanitize_data(df):
 def insert_into_mysql(data):
   """Inserts sanitized data into MySQL with a progress bar"""
   try:
-    connection = connection_pool.get_connection()
+    connection = mysql.connector.connect(**DB_CONFIG)
     cursor = connection.cursor()
     
     cursor.execute("""
@@ -88,7 +89,7 @@ def upload_csv():
   timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
   filename = os.path.basename(file_path)
   saved_file_path = os.path.join(UPLOAD_FOLDER, f"{timestamp}_{filename}")
-  os.rename(file_path, saved_file_path)
+  shutil.copy(file_path, saved_file_path)
   
   messagebox.showinfo("File saved", f"File saved at: {saved_file_path}")
   
@@ -96,17 +97,18 @@ def upload_csv():
     df = pd.read_csv(saved_file_path, dtype=str)
   except Exception as e:
     messagebox.showerror("CSV read error", f"Error reading CSV: {e}")
+    return
     
-    sanitize_data = sanitize_data(df)
-    if sanitize_data is None:
-      messagebox.showerror("Validation failed", "CSV contains invalid or malicious data.")
-      return
-    
-    result = insert_into_mysql(sanitize_data)
-    if isinstance(result, int):
-      messagebox.showinfo("Success", f"Inserted {result} records into MySQL.")
-    else:
-      messagebox.showerror("Database error", result)
+  sanitized_data = sanitize_data(df)
+  if sanitized_data is None:
+    messagebox.showerror("Validation failed", "CSV contains invalid or malicious data.")
+    return
+  
+  result = insert_into_mysql(sanitized_data)
+  if isinstance(result, int):
+    messagebox.showinfo("Success", f"Inserted {result} records into MySQL.")
+  else:
+    messagebox.showerror("Database error", result)
       
       
 root = tk.Tk()
